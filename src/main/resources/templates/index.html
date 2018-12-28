@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Garden</title>
+    <link type="text/css" rel="stylesheet" href="webjars/bootstrap/4.1.3/css/bootstrap.css">
+</head>
+<body>
+
+<div class="container" style="padding-top: 50px">
+
+    <!--真是个好奇的师父呢～[奸笑]，然而这里什么都没有[奸笑]～-->
+    <!--祝师父圣诞快乐啦～-->
+
+
+    <h2 style="padding-bottom: 20px">我是小工具</h2>
+
+    <div id="notifyDiv">
+        <h5>简介：帮助师父省去找图片的麻烦，现在你只要截图+ControlV就好啦～</h5>
+        <h5>用法:</h5>
+        <ol>
+            <li>用截图工具截下你要的图片～</li>
+            <li>按下Control+V</li>
+            <li>复制你想要的链接(推荐相对链接，需要修改host)</li>
+            <li>Enjoy~</li>
+        </ol>
+    </div>
+
+    <div class="form-group" id="absDiv" hidden>
+        <label for="absUrl">绝对路径:</label>
+        <button type="button" class="btn btn-sm btn-success" style="margin-left: 50px" onclick="clickTocopy('absUrl')">点我复制</button>
+        <br>
+        <span id="absUrl" style="padding-top: 20px"></span>
+    </div>
+
+    <div class="form-group" id="relDiv" hidden>
+        <label for="relUrl">相对路径:</label>
+        <button type="button" class="btn btn-sm btn-success" style="margin-left: 50px" onclick="clickTocopy('relUrl')">点我复制</button>
+        <br>
+        <span id="relUrl" style="padding-top: 20px"></span>
+    </div>
+
+
+    <div></div>
+    <div id="result" style="padding-top: 40px"></div>
+
+    <!--存储复制结果-->
+    <input id="store_res"  hidden>
+</div>
+
+<script type="text/javascript" src="webjars/jquery/3.3.1-1/jquery.min.js"></script>
+<script type="text/javascript" src="webjars/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+
+<script type="text/javascript">
+
+
+    document.addEventListener("paste", function (e) {
+        var url = 'http://localhost:8080/garden/uploadImg';
+        // var url = 'http://47.100.226.85:8080/garden/uploadImg';
+        var params = {"mediaType": 3};
+        function dataURLtoBlob(dataurl) {
+            var arr = dataurl.split(",");
+            var mime = arr[0].match(/:(.*?);/)[1];
+            var bstr = atob(arr[1].replace(/\s/g, ''));
+            var n = bstr.length;
+            var u8arr = new Uint8Array(n);
+            while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new Blob([u8arr], {type: mime});
+        }
+        var cbd = e.clipboardData;
+        console.log(cbd.items.length);
+        for(var i = 0; i < cbd.items.length; i++) {
+            var item = cbd.items[i];
+            if (item.kind === "file") {
+                var blob = item.getAsFile();
+                console.log(blob.name);
+                console.log(blob.size);
+
+                var fr = new FileReader();
+                fr.readAsDataURL(blob);
+                fr.onload=function(e){
+                    var result=document.getElementById("result");
+                    var str = this.result;
+                    result.innerHTML='<img src="' + str +'" alt="" />';
+                    var blobBin = dataURLtoBlob(str);
+                    var formData = new FormData();
+                    var fileType = blobBin.type.split("/")[1];
+                    params.fileType = fileType;
+                    formData.append('file', blobBin);
+                    $.ajax({
+                        url: url,
+                        type: 'post',
+                        cache: false,
+                        processData: false,
+                        contentType:false,
+                        data: formData,
+                        dataType: 'json',
+                        success: function (data) {
+                            var code=data.code;
+                            var filename=data.msg;
+
+                            var absPrefix="http://47.100.226.85/noteimg/";
+                            var refPrefex="http://www.zqq.com/noteimg/";
+
+                            var absurl=absPrefix+filename;
+                            var refurl=refPrefex+filename;
+
+                            if(code==500){
+                                alert("出错了...\n"+filename);
+                                absurl=filename;
+                                refurl=filename;
+                            }
+
+                            $('#absUrl').empty();
+                            $('#absUrl').text(absurl);
+
+                            $('#relUrl').empty();
+                            $('#relUrl').text(refurl);
+
+                            document.getElementById("absDiv").removeAttribute("hidden");
+                            document.getElementById("relDiv").removeAttribute("hidden");
+
+
+                            // 隐藏提示信息
+                            document.getElementById("notifyDiv").hidden=true;
+
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            console.log(textStatus + "---" + errorThrown);
+                        }
+                    });
+                }
+            }else{
+                console.log("not file");
+            }
+        }
+    }, false);
+
+    function clickTocopy(id) {
+        theurl=document.getElementById(id).innerText;
+        input=document.getElementById('store_res');
+        // 取消隐藏，进行复制
+        input.hidden=false;
+        input.setAttribute('value', theurl);
+        input.select();
+        document.execCommand('copy');
+        // 赶紧隐藏，可不能给别人看见那么印度的复制方法
+        input.hidden=true;
+
+    }
+</script>
+</body>
+</html>
