@@ -2,3 +2,6 @@ server:
   port: 8080
   servlet:
     context-path: /garden
+spring:
+  mvc:
+    static-path-pattern: /images/**
