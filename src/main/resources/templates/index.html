@@ -16,6 +16,8 @@
 
     <h2 style="padding-bottom: 20px">我是小工具</h2>
 
+    <h3 style="padding-bottom: 20px" id="happyBirthday" hidden="hidden"></h3>
+
     <div id="notifyDiv">
         <h5>简介：帮助师父省去找图片的麻烦，现在你只要截图+ControlV就好啦～</h5>
         <h5>用法:</h5>
@@ -54,6 +56,23 @@
 
 <script type="text/javascript">
 
+    window.onload = function () {
+        var date = new Date();
+        var month = date.getMonth() + 1;
+        var day = date.getDate();
+        if (month === 8 && day === 9){
+            showHappyBirthDay();
+        }
+        if (month === 12 && day === 15){
+            showHappyBirthDay();
+        }
+
+    };
+    function showHappyBirthDay() {
+        label = document.getElementById("happyBirthday");
+        label.hidden = false;
+        label.innerText = "师父生日快乐呀～OvO～";
+    }
 
     document.addEventListener("paste", function (e) {
         // var url = 'http://localhost:8080/garden/uploadImg';
@@ -149,7 +168,6 @@
         document.execCommand('copy');
         // 赶紧隐藏，可不能给别人看见那么印度的复制方法
         input.hidden=true;
-
     }
 </script>
 </body>
